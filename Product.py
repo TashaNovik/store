@@ -5,6 +5,10 @@ class Product:
         self.price = price
         self.stock = stock
 
+    def __eq__(self, other):
+        if not isinstance(other, Product):
+            return False
+        return self.name == other.name
 
     def update_stock(self, quantity: int):
         """
