@@ -5,6 +5,7 @@ class Product:
         self.price = price
         self.stock = stock
 
+
     def update_stock(self, quantity: int):
         """
         Обновляет количество товаров на складе. Товар может быть продан, а может быть добавлен на склад.
