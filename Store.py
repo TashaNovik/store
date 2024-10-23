@@ -1,6 +1,6 @@
 from Order import Order
 from Product import Product
-from typing import List, Dict
+from typing import List
 
 
 class Store:
