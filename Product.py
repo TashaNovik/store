@@ -1,3 +1,4 @@
+from typing import Union
 class Product:
     def __init__(self, name: str, price: float, stock: int):
         self.name = name
@@ -11,6 +12,10 @@ class Product:
         if not isinstance(other, Product):
             return False
         return self.name == other.name and self.price == other.price
+
+    def __hash__(self) -> int:
+        """ Реализация для хэширования продукта"""
+        return hash(self.name)
 
     def update_stock(self, quantity: int) -> int:
         """

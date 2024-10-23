@@ -9,7 +9,6 @@ class Order:
     def add_product(self, product: Product, quantity: int) -> None:
         """
         Добавляет товар в заказ.
-
         :param product: Объект товара.
         :param quantity: Количество товара для добавления.
         :raises ValueError: Если товара недостаточно на складе или quantity <= 0.
@@ -31,7 +30,6 @@ class Order:
     def calculate_total(self) -> float:
         """
         Рассчитывает общую стоимость заказа.
-
         :return: Общая стоимость заказа.
         """
         return sum(product.price * quantity for product, quantity in self.products.items())
