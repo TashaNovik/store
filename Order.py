@@ -36,32 +36,57 @@ class Order:
         """
         return sum(product.price * quantity for product, quantity in self.products.items())
 
-    def remove_product(self, product: Product, quantity: int) -> None:
+    def _update_product_quantity(self, product: Product, quantity: int, operation: str) -> None:
         """
-        Удаляет указанное количество товара из заказа.
-        :param product: Объект товара для удаления.
-        :param quantity: Количество товара для удаления.
-        :raises ValueError: Если товара нет в заказе, quantity <=0, или если quantity больше, чем количество товара в заказе.
+        Вспомогательный метод для обновления количества товара в заказе.
+        :param product: Объект товара.
+        :param quantity: Количество для обновления (положительное для добавления, отрицательное для удаления).
+        :param operation:  Строка, описывающая операцию ("возврат" или "удаление").
+        :raises ValueError:  Если товара нет в заказе, quantity имеет неверный знак,
+        или если абсолютное значение quantity больше, чем количество товара в заказе.
         """
-
-        if quantity <= 0:
-            raise ValueError("Количество товара для удаления должно быть положительным.")
-
         if product not in self.products:
             raise ValueError(f"Товар '{product.name}' не найден в заказе.")
 
-        if self.products[product] < quantity:
-            raise ValueError(f"В заказе меньше товара '{product.name}', чем запрошено для удаления. "
-                             f"В заказе: {self.products[product]}, запрошено: {quantity}")
+        if (operation == "возврат" and quantity <= 0) or (operation == "удаление" and quantity <= 0):
+            raise ValueError(f"Количество товара для {operation}а должно быть положительным.")
 
-        self.products[product] -= quantity
-        product.update_stock(quantity)  # Возвращаем товар на склад
+        if self.products[product] < abs(quantity):  # единая проверка количества
+            raise ValueError(f"В заказе меньше товара '{product.name}', чем запрошено для {operation}а. "
+                             f"В заказе: {self.products[product]}, запрошено: {abs(quantity)}")
+
+        if operation == "возврат":
+            self.products[product] -= quantity
+            product.update_stock(quantity)  # Увеличиваем количество товара на складе
+
+        if operation == "удаление":
+            self.products[product] -= quantity  # quantity  уже положительное
+            product.update_stock(quantity)  # Возвращаем товар на склад
 
         if self.products[product] == 0:
-            del self.products[product]  # Удаляем товар из заказа, если количество стало 0
+            del self.products[product]  # Удаляем товар из заказа
+
+    def remove_product(self, product: Product, quantity: int) -> None:
+        """
+        Удаляет указанное количество товара из заказа.
+
+        :param product: Объект товара для удаления.
+        :param quantity: Количество товара для удаления. Должно быть положительным.
+        :raises ValueError: Если товара нет в заказе или quantity <= 0.
+        """
+        self._update_product_quantity(product, quantity, "удаление")
+
+    def return_product(self, product: Product, quantity: int) -> None:
+        """
+        Возвращает указанный товар обратно в магазин.
+        :param product: Объект товара для возврата.
+        :param quantity: Количество товара для возврата.
+        :raises ValueError: Если товара нет в заказе или quantity <= 0.
+        """
+        self._update_product_quantity(product, quantity, "возврат")
 
 
-def main() -> None:
+def main(product=None) -> None:
     """
     Демонстрирует работу классов Product и Order,
     моделируя создание заказа и добавление товаров.
@@ -77,8 +102,15 @@ def main() -> None:
         order.add_product(product2, 1)
         order.remove_product(product1, 2)  # удаление товара из заказа
         order.remove_product(product1, 1)  # попытка удалить больше чем есть в заказе
+        order.add_product(product1, 3)
+        order.return_product(product1, 2)  # возврат части товара
+        order.return_product(product1, 1)  # возврат оставшегося товара
+        order.add_product(product2, 1)
+        order.return_product(product2, 1)  # возврат всего товара
+        order.return_product(product1, 1)  # попытка вернуть несуществующий товар
     except ValueError as e:
-        print(f"Ошибка: {e}")
+        print(
+            f"Ошибка при обработке товара '{product.name if 'product' in locals() else 'неизвестен'}': {e}")  
 
     print(f"Общая стоимость заказа: {order.calculate_total()}")
 
